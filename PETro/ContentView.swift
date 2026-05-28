@@ -1,9 +1,4 @@
-//
-//  ContentView.swift
-//  PETro
-//
 //  Created by Viktoria Karpenko on 28.05.2026.
-//
 
 import SwiftUI
 
