@@ -34,8 +34,9 @@ struct ARViewContainer: UIViewRepresentable {
     }
 
     final class Coordinator: NSObject {
+        
         weak var arView: ARView?
-        private var pet: ModelEntity?
+        private var pet: Pet?
         
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let arView = arView else { return }
@@ -51,18 +52,12 @@ struct ARViewContainer: UIViewRepresentable {
                 let destination = Transform(matrix: hitResult.worldTransform)
                 pet.move(to: destination, relativeTo: nil, duration: 0.4)
             } else {
-                let newPet = makeCube()
+                let newPet = Pet()
                 let anchor = AnchorEntity(world: hitResult.worldTransform)
                 anchor.addChild(newPet)
                 arView.scene.addAnchor(anchor)
                 pet = newPet
             }
-        }
-        
-        private func makeCube() -> ModelEntity {
-            let cube = MeshResource.generateBox(size: 0.1)
-            let material = SimpleMaterial(color: .purple, isMetallic: false)
-            return ModelEntity(mesh: cube, materials: [material])
         }
     }
 }
