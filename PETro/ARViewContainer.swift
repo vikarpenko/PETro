@@ -10,9 +10,16 @@ struct ARViewContainer: UIViewRepresentable {
         let arView = ARView(frame: .zero)
         
         let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = [.horizontal, .vertical]
+        configuration.planeDetection = [.horizontal]
+        configuration.environmentTexturing = .automatic
         arView.session.run(configuration)
         
+        let tap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleTap(_:))
+        )
+        
+        arView.addGestureRecognizer(tap)
         context.coordinator.arView = arView
         
         return arView
@@ -28,5 +35,26 @@ struct ARViewContainer: UIViewRepresentable {
 
     final class Coordinator: NSObject {
         weak var arView: ARView?
+        
+        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let arView = arView else { return }
+            let screenPoint = recognizer.location(in: arView)
+            
+            guard let hitResult = arView.raycast(
+                from: screenPoint,
+                allowing: .estimatedPlane,
+                alignment: .horizontal
+            ).first else { return }
+            
+            let anchor = AnchorEntity(world: hitResult.worldTransform)
+            anchor.addChild(makeCube())
+            arView.scene.addAnchor(anchor)
+        }
+        
+        private func makeCube() -> ModelEntity {
+            let cube = MeshResource.generateBox(size: 0.1)
+            let material = SimpleMaterial(color: .purple, isMetallic: false)
+            return ModelEntity(mesh: cube, materials: [material])
+        }
     }
 }
