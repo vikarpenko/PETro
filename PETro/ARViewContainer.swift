@@ -35,6 +35,7 @@ struct ARViewContainer: UIViewRepresentable {
 
     final class Coordinator: NSObject {
         weak var arView: ARView?
+        private var pet: ModelEntity?
         
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let arView = arView else { return }
@@ -46,9 +47,16 @@ struct ARViewContainer: UIViewRepresentable {
                 alignment: .horizontal
             ).first else { return }
             
-            let anchor = AnchorEntity(world: hitResult.worldTransform)
-            anchor.addChild(makeCube())
-            arView.scene.addAnchor(anchor)
+            if let pet = pet {
+                let destination = Transform(matrix: hitResult.worldTransform)
+                pet.move(to: destination, relativeTo: nil, duration: 0.4)
+            } else {
+                let newPet = makeCube()
+                let anchor = AnchorEntity(world: hitResult.worldTransform)
+                anchor.addChild(newPet)
+                arView.scene.addAnchor(anchor)
+                pet = newPet
+            }
         }
         
         private func makeCube() -> ModelEntity {
