@@ -6,6 +6,8 @@ import RealityKit
 
 struct ARViewContainer: UIViewRepresentable {
     
+    @Binding var animationState: Pet.AnimationState
+    
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
         
@@ -26,7 +28,7 @@ struct ARViewContainer: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: ARView, context: Context) {
-        
+        context.coordinator.pet?.play(animationState)
     }
     
     func makeCoordinator() -> Coordinator {
@@ -36,7 +38,7 @@ struct ARViewContainer: UIViewRepresentable {
     final class Coordinator: NSObject {
         
         weak var arView: ARView?
-        private var pet: Pet?
+        var pet: Pet?
         
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let arView = arView else { return }
