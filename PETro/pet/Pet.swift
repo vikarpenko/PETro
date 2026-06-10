@@ -7,8 +7,11 @@ final class Pet: Entity, HasModel {
     
     required init() {
         super.init()
-        // purple cube for start
-        if let parrot = try? Entity.load(named: "Art.scnassets/pareot.usdz") {
+        if let parrot = try? Entity.load(named: "parrot.usdz") {
+            parrot.scale = [0.005, 0.005, 0.005]
+            if let animation = parrot.availableAnimations.first {
+                parrot.playAnimation(animation.repeat())
+            }
             self.addChild(parrot)
         } else{
             let mesh = MeshResource.generateBox(size: 0.1)
