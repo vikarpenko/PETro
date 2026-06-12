@@ -49,7 +49,11 @@ struct ARViewContainer: UIViewRepresentable {
                 allowing: .estimatedPlane,
                 alignment: .horizontal
             ).first else { return }
-            
+
+            let hitY = hitResult.worldTransform.columns.3.y
+            let cameraY = arView.cameraTransform.translation.y
+            guard hitY < cameraY else { return }
+
             if let pet = pet {
                 let destination = Transform(matrix: hitResult.worldTransform)
                 pet.move(to: destination, relativeTo: nil, duration: 0.4)
