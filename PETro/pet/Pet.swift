@@ -37,8 +37,8 @@ final class Pet: Entity {
     }
     
     private func setup() {
-        if let parrot = try? Entity.load(named: "parrot.usdz") {
-            parrot.scale = [3, 3, 3]
+        if let parrot = try? Entity.load(named: "parrot_actions.usdz") {
+            parrot.scale = [0.5, 0.5, 0.5]
             
             self.parrotModel = parrot
             modelContainer.addChild(parrot)
