@@ -30,7 +30,7 @@ final class Pet: Entity {
     private let modelContainer = Entity()
     private var parrotModel: Entity?
 
-    private var currentState: AnimationState = .idle
+    private var currentState: AnimationState?
     
     required init() {
         super.init()
