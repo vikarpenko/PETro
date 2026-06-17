@@ -76,17 +76,13 @@ final class Pet: Entity {
               let fullAnim = parrot.availableAnimations.first
         else { return }
         
-        let totalDuration = state.startTime + state.duration
-        let trimmedDefinition = fullAnim.definition.trimmed(
-            duration: totalDuration
+        let view = AnimationView(
+            source: fullAnim.definition,
+            trimStart: state.startTime,
+            trimEnd: state.startTime + state.duration
         )
         
-        let idleView = AnimationView(
-            source: trimmedDefinition,
-            offset: state.startTime
-        )
-        
-        if let clip = try? AnimationResource.generate(with: idleView) {
+        if let clip = try? AnimationResource.generate(with: view) {
             switch state {
             case .rise, .land, .trick:
                 parrot.playAnimation(clip)
@@ -146,15 +142,12 @@ final class Pet: Entity {
         behaviorTask = Task { @MainActor [weak self] in
             guard let self else { return }
             
-            while !Task.isCancelled {
-                play(.idle)
-                await waitForAnimation(boredomDelay)
-                
-                if Task.isCancelled { return }
-                
-                play(.trick)
-                await waitForAnimation(AnimationState.trick.duration)
-            }
+            play(.idle)
+            await waitForAnimation(boredomDelay)
+
+            if Task.isCancelled { return }
+
+            play(.trick)
         }
     }
 }
