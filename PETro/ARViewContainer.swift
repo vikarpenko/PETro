@@ -56,7 +56,7 @@ struct ARViewContainer: UIViewRepresentable {
 
             if let pet = pet {
                 let destination = Transform(matrix: hitResult.worldTransform)
-                pet.move(to: destination, relativeTo: nil, duration: 0.4)
+                pet.fly(to: destination)
             } else {
                 let newPet = Pet()
                 let anchor = AnchorEntity(world: hitResult.worldTransform)

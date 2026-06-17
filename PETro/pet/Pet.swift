@@ -29,6 +29,8 @@ final class Pet: Entity {
     
     private let modelContainer = Entity()
     private var parrotModel: Entity?
+
+    private var currentState: AnimationState = .idle
     
     required init() {
         super.init()
@@ -54,6 +56,9 @@ final class Pet: Entity {
     }
     
     func play(_ state: AnimationState) {
+        guard state != currentState else { return }
+        currentState = state
+        
         guard let parrot = parrotModel,
               let fullAnim = parrot.availableAnimations.first else { return }
         
@@ -67,6 +72,34 @@ final class Pet: Entity {
         
         if let clip = try? AnimationResource.generate(with: idleView) {
             parrot.playAnimation(clip.repeat())
+        }
+    }
+    
+    func fly(to destination: Transform) {
+        let currentPosition = position(relativeTo: nil)
+        let offset = destination.translation - currentPosition
+        
+        let distance = length(offset)
+        let duration = TimeInterval(distance / 0.8)
+        let direction = SIMD3<Float>(offset.x, 0, offset.z)
+
+        var target = Transform(
+            scale: scale,
+            rotation: orientation(relativeTo: nil),
+            translation: destination.translation
+        )
+
+        if length(direction) > 0.001 {
+            let modelRotation: Float = .pi / 2
+            let yaw = atan2(-direction.x, -direction.z) + modelRotation
+            target.rotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
+        }
+
+        play(.fly)
+        move(to: target, relativeTo: nil, duration: duration, timingFunction: .easeInOut)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+            self?.play(.idle)
         }
     }
 }
