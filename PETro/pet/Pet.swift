@@ -146,15 +146,12 @@ final class Pet: Entity {
         behaviorTask = Task { @MainActor [weak self] in
             guard let self else { return }
             
-            while !Task.isCancelled {
-                play(.idle)
-                await waitForAnimation(boredomDelay)
-                
-                if Task.isCancelled { return }
-                
-                play(.trick)
-                await waitForAnimation(AnimationState.trick.duration)
-            }
+            play(.idle)
+            await waitForAnimation(boredomDelay)
+
+            if Task.isCancelled { return }
+
+            play(.trick)
         }
     }
 }
