@@ -30,9 +30,26 @@ class Detector: ObservableObject {
     let color: UIColor = UIColor(red: 1.0, green: 0.44, blue: 0.56, alpha: 1)
 
     static let cocoLabels = [
-        "person", "bird", "cat", "dog", "bowl", "banana", "apple", "sandwich",
-        "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake",
-        "chair", "couch"
+        "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
+        "truck", "boat",
+        "traffic light", "fire hydrant", "stop sign", "parking meter", "bench",
+        "bird", "cat",
+        "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
+        "backpack",
+        "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis",
+        "snowboard", "sports ball",
+        "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
+        "tennis racket",
+        "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl",
+        "banana", "apple",
+        "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut",
+        "cake", "chair",
+        "couch", "potted plant", "bed", "dining table", "toilet", "tv",
+        "laptop", "mouse",
+        "remote", "keyboard", "cell phone", "microwave", "oven", "toaster",
+        "sink",
+        "refrigerator", "book", "clock", "vase", "scissors", "teddy bear",
+        "hair drier", "toothbrush",
     ]
 
     init() { loadModel() }
@@ -76,9 +93,11 @@ class Detector: ObservableObject {
         guard let results = req.results as? [VNCoreMLFeatureValueObservation]
         else { return [] }
         var out: [Detection] = []
-        
+
         for observation in results {
-            guard let arr = observation.featureValue.multiArrayValue else { continue }
+            guard let arr = observation.featureValue.multiArrayValue else {
+                continue
+            }
             let shape = arr.shape.map { $0.intValue }
             guard shape.count == 3 && shape[2] == 6 else { continue }
             for i in 0..<shape[1] {

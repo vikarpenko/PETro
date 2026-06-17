@@ -1,5 +1,5 @@
-import ARKit
 //  Created by Viktoria Karpenko on 30.05.2026.
+import ARKit
 import Foundation
 import RealityKit
 import SwiftUI
@@ -40,6 +40,8 @@ struct ARViewContainer: UIViewRepresentable {
         weak var arView: ARView?
         var pet: Pet?
 
+        private let foodDetector = FoodDetector()
+
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let arView = arView else { return }
             let screenPoint = recognizer.location(in: arView)
@@ -67,6 +69,9 @@ struct ARViewContainer: UIViewRepresentable {
                 anchor.addChild(newPet)
                 arView.scene.addAnchor(anchor)
                 pet = newPet
+
+                foodDetector.setup(arView: arView, pet: newPet)
+                arView.session.delegate = foodDetector
             }
         }
     }

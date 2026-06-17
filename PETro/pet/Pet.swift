@@ -150,4 +150,47 @@ final class Pet: Entity {
             play(.trick)
         }
     }
+    
+    @MainActor
+    func goAndEat(dest: Transform) async {
+        guard !isMoving else { return }
+        
+        isMoving = true
+        behaviorTask?.cancel()
+
+        let currentPosition = position(relativeTo: nil)
+        let offset = dest.translation - currentPosition
+        
+        let distance = length(offset)
+        let flightDuration = TimeInterval(distance / 0.8)
+        let direction = SIMD3<Float>(offset.x, 0, offset.z)
+        
+        var target = Transform(
+            scale: scale,
+            rotation: orientation(relativeTo: nil),
+            translation: dest.translation
+        )
+        
+        if length(direction) > 0.001 {
+            let modelRotation: Float = .pi / 2
+            let yaw = atan2(-direction.x, -direction.z) + modelRotation
+            target.rotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
+        }
+        
+        play(.rise)
+        await waitForAnimation(AnimationState.rise.duration)
+        
+        play(.fly)
+        move(to: target, relativeTo: nil, duration: flightDuration, timingFunction: .easeInOut)
+        
+        await waitForAnimation(flightDuration)
+        
+        play(.land)
+        await waitForAnimation(AnimationState.land.duration)
+        isMoving = false
+        
+        play(.eat)
+                
+    }
+    
 }
