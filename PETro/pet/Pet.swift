@@ -9,20 +9,32 @@ final class Pet: Entity {
         case fly
         case eat
         case idle
+        case rise
+        case land
+        case trick
+        case circleFly
         
         var startTime: TimeInterval {
             switch self {
-            case .fly:  return 0.0
-            case .eat:  return 1.8361666666666667
-            case .idle: return 6.97638888888889
+            case .fly:       return 0.0
+            case .eat:       return 1.8361666666666667
+            case .idle:      return 6.97638888888889
+            case .rise:      return 9.980952380952381
+            case .land:      return 11.114285714285714
+            case .trick:     return 12.81904761904762
+            case .circleFly: return 15.542857142857143
             }
         }
         
         var duration: TimeInterval {
             switch self {
-            case .fly:  return 1.4253888888888888
-            case .eat:  return 5.140222222222223
-            case .idle: return 3.0
+            case .fly:       return 1.4253888888888888
+            case .eat:       return 5.140222222222223
+            case .idle:      return 3.0
+            case .rise:      return 1.1333333333333329
+            case .land:      return 1.7047619047619046
+            case .trick:     return 2.723809523809524
+            case .circleFly: return 4.447619047619048
             }
         }
     }
@@ -71,7 +83,12 @@ final class Pet: Entity {
         )
         
         if let clip = try? AnimationResource.generate(with: idleView) {
-            parrot.playAnimation(clip.repeat())
+            switch state {
+            case .rise, .land, .trick:
+                parrot.playAnimation(clip)
+            default:
+                parrot.playAnimation(clip.repeat())
+            }
         }
     }
     
