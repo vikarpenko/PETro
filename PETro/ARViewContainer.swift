@@ -19,6 +19,11 @@ struct ARViewContainer: UIViewRepresentable {
             configuration.frameSemantics.insert(.personSegmentationWithDepth)
         }
 
+        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
+            configuration.sceneReconstruction = .mesh
+            arView.environment.sceneUnderstanding.options.insert(.occlusion)
+        }
+
         arView.session.run(configuration)
 
         let tap = UITapGestureRecognizer(
