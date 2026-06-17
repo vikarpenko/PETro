@@ -42,6 +42,7 @@ final class Pet: Entity {
     private var parrotModel: Entity?
 
     private var currentState: AnimationState?
+    private var isMoving = false
     
     required init() {
         super.init()
@@ -93,6 +94,10 @@ final class Pet: Entity {
 
     @MainActor
     func fly(to destination: Transform) async {
+        guard !isMoving else { return }
+        
+        isMoving = true
+        
         let currentPosition = position(relativeTo: nil)
         let offset = destination.translation - currentPosition
 
@@ -124,6 +129,7 @@ final class Pet: Entity {
         await waitForAnimation(AnimationState.land.duration)
         
         play(.idle)
+        isMoving = false
     }
     
     private func waitForAnimation(_ duration: TimeInterval) async {
