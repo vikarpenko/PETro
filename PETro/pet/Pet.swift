@@ -1,10 +1,9 @@
 //  Created by Viktoria Karpenko on 02.06.2026.
 import Foundation
-import UIKit
 import RealityKit
+import UIKit
 
 final class Pet: Entity {
-    
     enum AnimationState {
         case fly
         case eat
@@ -16,29 +15,29 @@ final class Pet: Entity {
         
         var startTime: TimeInterval {
             switch self {
-            case .fly:       return 0.0
-            case .eat:       return 1.8361666666666667
-            case .idle:      return 6.97638888888889
-            case .rise:      return 9.980952380952381
-            case .land:      return 11.114285714285714
-            case .trick:     return 12.81904761904762
-            case .circleFly: return 15.542857142857143
+            case .fly: return 0.0
+            case .eat: return 1.8361666666666667
+            case .idle: return 6.97638888888889
+            case .rise: return 16.768331908988764
+            case .land: return 18.674204269662922
+            case .trick: return 21.54098090786517
+            case .circleFly: return 26.121442114606744
             }
         }
         
         var duration: TimeInterval {
             switch self {
-            case .fly:       return 1.4253888888888888
-            case .eat:       return 5.140222222222223
-            case .idle:      return 3.0
-            case .rise:      return 1.1333333333333329
-            case .land:      return 1.7047619047619046
-            case .trick:     return 2.723809523809524
-            case .circleFly: return 4.447619047619048
+            case .fly: return 1.4253888888888888
+            case .eat: return 5.140222222222223
+            case .idle: return 3.0
+            case .rise: return 1.9058562728089887
+            case .land: return 2.866792193483146
+            case .trick: return 4.580461206741573
+            case .circleFly: return 7.4792847671910115
             }
         }
     }
-    
+
     private let modelContainer = Entity()
     private var parrotModel: Entity?
 
@@ -49,39 +48,39 @@ final class Pet: Entity {
         self.addChild(modelContainer)
         setup()
     }
-    
+
     private func setup() {
         if let parrot = try? Entity.load(named: "parrot_actions.usdz") {
             parrot.scale = [0.5, 0.5, 0.5]
-            
             self.parrotModel = parrot
             modelContainer.addChild(parrot)
-            
             play(.idle)
-            
-        } else{
+        } else {
             let mesh = MeshResource.generateBox(size: 0.1)
             let material = SimpleMaterial(color: .purple, isMetallic: false)
             let model = ModelComponent(mesh: mesh, materials: [material])
             self.components.set(model)
         }
     }
-    
+
     func play(_ state: AnimationState) {
         guard state != currentState else { return }
         currentState = state
-        
+
         guard let parrot = parrotModel,
-              let fullAnim = parrot.availableAnimations.first else { return }
-        
+            let fullAnim = parrot.availableAnimations.first
+        else { return }
+
         let totalDuration = state.startTime + state.duration
-        let trimmedDefinition = fullAnim.definition.trimmed(duration: totalDuration)
-        
+        let trimmedDefinition = fullAnim.definition.trimmed(
+            duration: totalDuration
+        )
+
         let idleView = AnimationView(
             source: trimmedDefinition,
             offset: state.startTime
         )
-        
+
         if let clip = try? AnimationResource.generate(with: idleView) {
             switch state {
             case .rise, .land, .trick:
@@ -91,13 +90,14 @@ final class Pet: Entity {
             }
         }
     }
-    
-    func fly(to destination: Transform) {
+
+    @MainActor
+    func fly(to destination: Transform) async {
         let currentPosition = position(relativeTo: nil)
         let offset = destination.translation - currentPosition
-        
+
         let distance = length(offset)
-        let duration = TimeInterval(distance / 0.8)
+        let flightDuration = TimeInterval(distance / 0.8)
         let direction = SIMD3<Float>(offset.x, 0, offset.z)
 
         var target = Transform(
@@ -112,11 +112,22 @@ final class Pet: Entity {
             target.rotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
         }
 
-        play(.fly)
-        move(to: target, relativeTo: nil, duration: duration, timingFunction: .easeInOut)
+        play(.rise)
+        await waitForAnimation(AnimationState.rise.duration)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
-            self?.play(.idle)
-        }
+        play(.fly)
+        move(to: target, relativeTo: nil, duration: flightDuration, timingFunction: .easeInOut)
+        
+        await waitForAnimation(flightDuration)
+        
+        play(.land)
+        await waitForAnimation(AnimationState.land.duration)
+        
+        play(.idle)
+    }
+    
+    private func waitForAnimation(_ duration: TimeInterval) async {
+        let nanoseconds = UInt64(duration * 1_000_000_000)
+        try? await Task.sleep(nanoseconds: nanoseconds)
     }
 }
