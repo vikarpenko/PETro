@@ -48,6 +48,8 @@ final class Pet: Entity {
     private var behaviorTask: Task<Void, Never>?
     private let boredomDelay: TimeInterval = 10
     
+    private(set) var isEating = false
+    
     required init() {
         super.init()
         self.addChild(modelContainer)
@@ -96,6 +98,7 @@ final class Pet: Entity {
     func fly(to destination: Transform) async {
         guard !isMoving else { return }
         isMoving = true
+        isEating = false
         behaviorTask?.cancel()
         
         let currentPosition = position(relativeTo: nil)
@@ -190,7 +193,14 @@ final class Pet: Entity {
         isMoving = false
         
         play(.eat)
-                
+        isEating = true
+    }
+    
+    @MainActor
+    func stopEating() {
+        guard isEating else { return }
+        isEating = false
+        startIdleBehavior()
     }
     
 }

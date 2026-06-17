@@ -16,7 +16,10 @@ final class FoodDetector: NSObject, ARSessionDelegate {
     private var isProcessing = false
 
     private let detector = Detector()
-
+    
+    private var framesWithoutFood = 0
+    private let framesBeforeStopEating = 8
+    
     func setup(arView: ARView, pet: Pet?) {
         self.arView = arView
         self.pet = pet
@@ -53,13 +56,23 @@ final class FoodDetector: NSObject, ARSessionDelegate {
 
                 handleEating(point: screenPoint)
             } else {
+                framesWithoutFood += 1
+                if framesWithoutFood >= framesBeforeStopEating {
+                    Task { @MainActor in self.pet?.stopEating() }
+                }
                 isProcessing = false
             }
 
         }
 
         func handleEating(point: CGPoint) {
+            framesWithoutFood = 0
             guard let pet = pet, let arView = arView else { return }
+            
+            guard !pet.isEating else {
+                isProcessing = false
+                return
+            }
             
             guard let hitResult = arView.raycast(from: point, allowing: .estimatedPlane, alignment: .horizontal).first else {
                 isProcessing = false
