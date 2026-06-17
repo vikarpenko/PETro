@@ -4,6 +4,7 @@ import RealityKit
 import UIKit
 
 final class Pet: Entity {
+    
     enum AnimationState {
         case fly
         case eat
@@ -37,25 +38,28 @@ final class Pet: Entity {
             }
         }
     }
-
+    
     private let modelContainer = Entity()
     private var parrotModel: Entity?
-
+    
     private var currentState: AnimationState?
     private var isMoving = false
+    
+    private var behaviorTask: Task<Void, Never>?
+    private let boredomDelay: TimeInterval = 10
     
     required init() {
         super.init()
         self.addChild(modelContainer)
         setup()
     }
-
+    
     private func setup() {
         if let parrot = try? Entity.load(named: "parrot_actions.usdz") {
             parrot.scale = [0.5, 0.5, 0.5]
             self.parrotModel = parrot
             modelContainer.addChild(parrot)
-            play(.idle)
+            startIdleBehavior()
         } else {
             let mesh = MeshResource.generateBox(size: 0.1)
             let material = SimpleMaterial(color: .purple, isMetallic: false)
@@ -63,25 +67,25 @@ final class Pet: Entity {
             self.components.set(model)
         }
     }
-
+    
     func play(_ state: AnimationState) {
         guard state != currentState else { return }
         currentState = state
-
+        
         guard let parrot = parrotModel,
-            let fullAnim = parrot.availableAnimations.first
+              let fullAnim = parrot.availableAnimations.first
         else { return }
-
+        
         let totalDuration = state.startTime + state.duration
         let trimmedDefinition = fullAnim.definition.trimmed(
             duration: totalDuration
         )
-
+        
         let idleView = AnimationView(
             source: trimmedDefinition,
             offset: state.startTime
         )
-
+        
         if let clip = try? AnimationResource.generate(with: idleView) {
             switch state {
             case .rise, .land, .trick:
@@ -91,32 +95,32 @@ final class Pet: Entity {
             }
         }
     }
-
+    
     @MainActor
     func fly(to destination: Transform) async {
         guard !isMoving else { return }
-        
         isMoving = true
+        behaviorTask?.cancel()
         
         let currentPosition = position(relativeTo: nil)
         let offset = destination.translation - currentPosition
-
+        
         let distance = length(offset)
         let flightDuration = TimeInterval(distance / 0.8)
         let direction = SIMD3<Float>(offset.x, 0, offset.z)
-
+        
         var target = Transform(
             scale: scale,
             rotation: orientation(relativeTo: nil),
             translation: destination.translation
         )
-
+        
         if length(direction) > 0.001 {
             let modelRotation: Float = .pi / 2
             let yaw = atan2(-direction.x, -direction.z) + modelRotation
             target.rotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
         }
-
+        
         play(.rise)
         await waitForAnimation(AnimationState.rise.duration)
         
@@ -128,12 +132,29 @@ final class Pet: Entity {
         play(.land)
         await waitForAnimation(AnimationState.land.duration)
         
-        play(.idle)
         isMoving = false
+        startIdleBehavior()
     }
     
     private func waitForAnimation(_ duration: TimeInterval) async {
-        let nanoseconds = UInt64(duration * 1_000_000_000)
-        try? await Task.sleep(nanoseconds: nanoseconds)
+        try? await Task.sleep(for: .seconds(duration))
+    }
+
+    private func startIdleBehavior() {
+        behaviorTask?.cancel()
+        
+        behaviorTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            
+            while !Task.isCancelled {
+                play(.idle)
+                await waitForAnimation(boredomDelay)
+                
+                if Task.isCancelled { return }
+                
+                play(.trick)
+                await waitForAnimation(AnimationState.trick.duration)
+            }
+        }
     }
 }
