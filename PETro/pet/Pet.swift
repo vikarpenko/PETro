@@ -43,11 +43,12 @@ final class Pet: Entity {
     private var parrotModel: Entity?
     
     private var currentState: AnimationState?
-    private var isMoving = false
-    
     private var behaviorTask: Task<Void, Never>?
-    private let boredomDelay: TimeInterval = 10
     
+    private let boredomDelay: TimeInterval = 10
+    private let speed: Float = 0.8
+    
+    private var isMoving = false
     private(set) var isEating = false
     
     required init() {
@@ -129,7 +130,7 @@ final class Pet: Entity {
         let offset = destination.translation - currentPosition
         
         let distance = length(offset)
-        let flightDuration = TimeInterval(distance / 0.8)
+        let flightDuration = TimeInterval(distance / speed)
         let direction = SIMD3<Float>(offset.x, 0, offset.z)
         
         var target = Transform(
