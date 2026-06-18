@@ -71,7 +71,7 @@ struct ARViewContainer: UIViewRepresentable {
             if let pet = pet {
                 let destination = Transform(matrix: hitResult.worldTransform)
                 Task { @MainActor in
-                    await pet.fly(to: destination)
+                    await pet.move(to: destination)
                 }
             } else {
                 let newPet = Pet()
