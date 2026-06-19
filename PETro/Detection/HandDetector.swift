@@ -16,8 +16,9 @@ final class HandDetector {
     
     private var handDetectedAt: TimeInterval?
     private var handLastDetectedAt: TimeInterval?
-    private let requiredPettingDuration: TimeInterval = 2
     private let handLostTimeout: TimeInterval = 1
+    private let requiredPettingDuration: TimeInterval = 1.5
+    private let pettingRadius: CGFloat = 150
     
     func setup(arView: ARView, pet: Pet) {
         self.arView = arView
@@ -37,7 +38,8 @@ final class HandDetector {
     
     private func onUpdate() {
         guard !isProcessing,
-              let frame = arView?.session.currentFrame,
+              let arView,
+              let frame = arView.session.currentFrame,
               frame.timestamp.truncatingRemainder(dividingBy: 0.5) < 0.03
         else { return }
         
@@ -45,14 +47,45 @@ final class HandDetector {
         let cameraImage = frame.capturedImage
         let frameTimestamp = frame.timestamp
         
+        let arViewSize = arView.bounds.size
+        let cameraImageSize = CGSize(
+            width: CVPixelBufferGetHeight(cameraImage),
+            height: CVPixelBufferGetWidth(cameraImage)
+        )
+        
         Task {
-            let handDetected = await detectHand(in: cameraImage)
-            updatePetting(handDetected: handDetected, at: frameTimestamp)
+            let handPoint = await detectHand(in: cameraImage)
+            
+            var handOverPet = false
+            if let handPoint, let petScreen = petScreenPoint() {
+                let handScreen = screenPoint(for: handPoint,imageSize: cameraImageSize,viewport: arViewSize)
+                handOverPet = hypot(handScreen.x - petScreen.x, handScreen.y - petScreen.y) < pettingRadius
+            }
+            // print(" --- hand over pet: ", handOverPet)
+            
+            updatePetting(handOverPet: handOverPet, at: frameTimestamp)
             isProcessing = false
         }
     }
+
+    private func petScreenPoint() -> CGPoint? {
+        guard let arView, let pet else { return nil }
+        return arView.project(pet.position(relativeTo: nil))
+    }
+
+    private func screenPoint(for visionPoint: CGPoint, imageSize: CGSize, viewport: CGSize) -> CGPoint {
+        let scale = max(viewport.width / imageSize.width, viewport.height / imageSize.height)
+        let scaledWidth = imageSize.width * scale
+        let scaledHeight = imageSize.height * scale
+        let xOffset = (scaledWidth - viewport.width) / 2
+        let yOffset = (scaledHeight - viewport.height) / 2
+
+        let x = visionPoint.x * scaledWidth - xOffset
+        let y = (1 - visionPoint.y) * scaledHeight - yOffset
+        return CGPoint(x: x, y: y)
+    }
     
-    private func detectHand(in cameraImage: CVPixelBuffer) async -> Bool {
+    private func detectHand(in cameraImage: CVPixelBuffer) async -> CGPoint? {
         return await Task.detached {
             let request = VNDetectHumanHandPoseRequest()
             request.maximumHandCount = 1
@@ -63,12 +96,18 @@ final class HandDetector {
             )
             
             try? imageHandler.perform([request])
-            return request.results?.isEmpty == false
+            
+            guard let handObservation = request.results?.first,
+                  let handCenterPoint = try? handObservation.recognizedPoint(.middleMCP),
+                  handCenterPoint.confidence > 0.3
+            else { return nil }
+            
+            return handCenterPoint.location
         }.value
     }
     
-    private func updatePetting(handDetected: Bool, at timestamp: TimeInterval) {
-        if handDetected {
+    private func updatePetting(handOverPet: Bool, at timestamp: TimeInterval) {
+        if handOverPet {
             handLastDetectedAt = timestamp
             
             guard let detectedAt = handDetectedAt else {

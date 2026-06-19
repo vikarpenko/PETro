@@ -133,7 +133,7 @@ final class Pet: Entity {
         state = .beingPetted
         behaviorTask?.cancel()
         
-        // !!! change to idle2 animation
+        // TODO: Replace with idle2 animation
         play(.eat)
         await waitForAnimation(AnimationState.eat.duration)
         
