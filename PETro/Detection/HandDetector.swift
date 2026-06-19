@@ -17,8 +17,8 @@ final class HandDetector {
     private var handDetectedAt: TimeInterval?
     private var handLastDetectedAt: TimeInterval?
     private let handLostTimeout: TimeInterval = 1
-    private let requiredPettingDuration: TimeInterval = 1.5
-    private let pettingRadius: CGFloat = 150
+    private let requiredPettingDuration: TimeInterval = 1
+    private let pettingRadius: CGFloat = 200
     
     func setup(arView: ARView, pet: Pet) {
         self.arView = arView
