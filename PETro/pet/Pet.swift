@@ -60,11 +60,14 @@ final class Pet: Entity {
     required init() {
         super.init()
         self.addChild(modelContainer)
-        setup()
+        Task{
+            await setup()
+        }
     }
     
-    private func setup() {
-        if let parrot = try? Entity.load(named: "parrot_actions.usdz") {
+    @MainActor
+    private func setup() async {
+        if let parrot = try? await Entity(named: "parrot_actions.usdz") {
             parrot.scale = [0.5, 0.5, 0.5]
             self.parrotModel = parrot
             modelContainer.addChild(parrot)
