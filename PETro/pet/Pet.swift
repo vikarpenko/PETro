@@ -126,6 +126,21 @@ final class Pet: Entity {
         startIdleBehavior()
     }
     
+    @MainActor
+    func reactToPetting() async {
+        guard state == .idle || state == .eating else { return }
+        
+        state = .beingPetted
+        behaviorTask?.cancel()
+        
+        // !!! change to idle2 animation
+        play(.eat)
+        await waitForAnimation(AnimationState.eat.duration)
+        
+        state = .idle
+        startIdleBehavior()
+    }
+    
     private func waitForAnimation(_ duration: TimeInterval) async {
         try? await Task.sleep(for: .seconds(duration))
     }

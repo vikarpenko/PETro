@@ -51,6 +51,7 @@ struct ARViewContainer: UIViewRepresentable {
         var pet: Pet?
 
         private let foodDetector = FoodDetector()
+        private let handDetector = HandDetector()
 
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard let arView = arView else { return }
@@ -82,6 +83,8 @@ struct ARViewContainer: UIViewRepresentable {
 
                 foodDetector.setup(arView: arView, pet: newPet)
                 arView.session.delegate = foodDetector
+
+                handDetector.setup(arView: arView, pet: newPet)
             }
         }
     }

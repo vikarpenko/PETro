@@ -43,7 +43,7 @@ final class FoodDetector: NSObject, ARSessionDelegate {
                 [
                     "bowl", "banana", "apple", "sandwich", "orange",
                     "broccoli", "carrot", "hot dog", "pizza", "donut",
-                    "cake", "person"
+                    "cake", /*"person"*/
                 ].contains($0.label)
             }) {
                 print("detected: \(detectedFood)")
