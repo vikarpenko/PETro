@@ -69,7 +69,7 @@ final class FoodDetector: NSObject, ARSessionDelegate {
             framesWithoutFood = 0
             guard let pet = pet, let arView = arView else { return }
             
-            guard !pet.isEating else {
+            guard pet.state == .idle else {
                 isProcessing = false
                 return
             }

@@ -39,17 +39,23 @@ final class Pet: Entity {
         }
     }
     
+    enum PetState {
+        case idle
+        case moving
+        case eating
+        case beingPetted
+    }
+    
     private let modelContainer = Entity()
     private var parrotModel: Entity?
     
-    private var currentState: AnimationState?
+    private var currentAnimation: AnimationState?
     private var behaviorTask: Task<Void, Never>?
+    
+    private(set) var state: PetState = .idle
     
     private let boredomDelay: TimeInterval = 10
     private let speed: Float = 0.8
-    
-    private var isMoving = false
-    private(set) var isEating = false
     
     required init() {
         super.init()
@@ -71,9 +77,9 @@ final class Pet: Entity {
         }
     }
     
-    func play(_ state: AnimationState) {
-        guard state != currentState else { return }
-        currentState = state
+    func play(_ animation: AnimationState) {
+        guard animation != currentAnimation else { return }
+        currentAnimation = animation
         
         guard let parrot = parrotModel,
               let fullAnim = parrot.availableAnimations.first
@@ -81,12 +87,12 @@ final class Pet: Entity {
         
         let view = AnimationView(
             source: fullAnim.definition,
-            trimStart: state.startTime,
-            trimEnd: state.startTime + state.duration
+            trimStart: animation.startTime,
+            trimEnd: animation.startTime + animation.duration
         )
         
         if let clip = try? AnimationResource.generate(with: view) {
-            switch state {
+            switch animation {
             case .rise, .land, .trick:
                 parrot.playAnimation(clip)
             default:
@@ -97,23 +103,23 @@ final class Pet: Entity {
     
     @MainActor
     func move(to destination: Transform) async {
-        guard !isMoving else { return }
+        guard state == .idle || state == .eating else { return }
         await flyTo(destination)
         startIdleBehavior()
     }
     
     @MainActor
     func goAndEat(dest: Transform) async {
-        guard !isMoving else { return }
+        guard state == .idle else { return }
         await flyTo(dest)
         play(.eat)
-        isEating = true
+        state = .eating
     }
     
     @MainActor
     func stopEating() {
-        guard isEating else { return }
-        isEating = false
+        guard state == .eating else { return }
+        state = .idle
         startIdleBehavior()
     }
     
@@ -122,8 +128,7 @@ final class Pet: Entity {
     }
     
     private func flyTo(_ destination: Transform) async {
-        isMoving = true
-        isEating = false
+        state = .moving
         behaviorTask?.cancel()
         
         let currentPosition = position(relativeTo: nil)
@@ -156,7 +161,7 @@ final class Pet: Entity {
         play(.land)
         await waitForAnimation(AnimationState.land.duration)
         
-        isMoving = false
+        state = .idle
     }
     
     private func startIdleBehavior() {
