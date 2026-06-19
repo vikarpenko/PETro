@@ -44,6 +44,12 @@ struct HelpView: View {
                 detail: "Hold your hand over the pet for a couple of seconds to pet it."
             )
             
+            HelpRow(
+                icon: "zzz",
+                title: "Don't bore it",
+                detail: "Leave it alone too long and it'll dramatically drop dead from boredom - keep it company!"
+            )
+            
             Spacer()
         }
         .padding(24)
