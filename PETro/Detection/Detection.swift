@@ -55,22 +55,25 @@ class Detector: ObservableObject {
     init() { loadModel() }
 
     private func loadModel() {
-        let config = MLModelConfiguration()
-        config.computeUnits = .all
-
-        guard let yoloModel = try? yolo26s(configuration: config)
-        else {
-            print("error in loading yolo26s model")
-            return
+        DispatchQueue.global(qos: .userInitiated).async {
+            let config = MLModelConfiguration()
+            config.computeUnits = .all
+            
+            guard let yoloModel = try? yolo26s(configuration: config)
+            else {
+                print("error in loading yolo26s model")
+                return
+            }
+            
+            let model = yoloModel.model
+            let vn = try? VNCoreMLModel(for: model)
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.mlModel = model
+                self?.vnModel = vn
+                self?.isReady = true
+            }
         }
-
-        self.mlModel = yoloModel.model
-        self.vnModel = try? VNCoreMLModel(for: yoloModel.model)
-
-        DispatchQueue.main.async {
-            self.isReady = true
-        }
-
     }
 
     var visionModel: VNCoreMLModel? { vnModel }
