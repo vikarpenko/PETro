@@ -20,7 +20,7 @@ struct ContentView: View {
                     Image("parrot")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 260, height: 260)
+                        .frame(width: 380, height: 380)
                         .cornerRadius(30)
 
                     Spacer().frame(height: 32)
