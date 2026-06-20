@@ -14,6 +14,7 @@ final class Pet: Entity {
         case trick
         case circleFly
         case petting
+        case speaking
         
         var startTime: TimeInterval {
             switch self {
@@ -25,6 +26,7 @@ final class Pet: Entity {
             case .trick: return 21.54098090786517
             case .circleFly: return 26.121442114606744
             case .petting: return 13.03
+            case .speaking: return 13.90
             }
         }
         
@@ -37,7 +39,8 @@ final class Pet: Entity {
             case .land: return 2.866792193483146
             case .trick: return 4.580461206741573
             case .circleFly: return 7.4792847671910115
-            case .petting: return 4.0
+            case .petting: return 4.44
+            case .speaking: return 2.0
             }
         }
     }
@@ -47,6 +50,7 @@ final class Pet: Entity {
         case moving
         case eating
         case beingPetted
+        case speaking
     }
     
     private let modelContainer = Entity()
@@ -142,6 +146,22 @@ final class Pet: Entity {
         state = .idle
         startIdleBehavior()
     }
+    
+    @MainActor
+      func reactToMimic(soundDuration: TimeInterval, onSoundStart: @escaping () -> Void) async {
+          guard state == .idle || state == .eating else { return }
+          
+          state = .speaking
+          behaviorTask?.cancel()
+          
+          play(.speaking)
+          onSoundStart()
+          
+          await waitForAnimation(soundDuration)
+          
+          state = .idle
+          startIdleBehavior()
+      }
     
     private func waitForAnimation(_ duration: TimeInterval) async {
         try? await Task.sleep(for: .seconds(duration))
