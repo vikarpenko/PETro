@@ -11,17 +11,17 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(red: 0.08, green: 0.22, blue: 0.18)
+                Color("Background")
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
 
                     Spacer()
-                    Image("parrot")
+                    Image("Parrot")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 380, height: 380)
-                        .cornerRadius(30)
+                        .offset(y: 40)
 
                     Spacer().frame(height: 32)
 
@@ -34,9 +34,9 @@ struct ContentView: View {
                                     design: .rounded
                                 )
                             )
-                            .foregroundStyle(.mint)
-
-                        Text("Віртуальний папуга теж хоче любові!")
+                            .foregroundStyle(.primary)
+                        
+                        Text("A virtual parrot needs love too!")
                             .font(
                                 .system(
                                     size: 16,
@@ -44,7 +44,7 @@ struct ContentView: View {
                                     design: .rounded
                                 )
                             )
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .tracking(1)
                     }
                     Spacer().frame(height: 52)
@@ -55,7 +55,7 @@ struct ContentView: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "play.fill")
                                     .font(.system(size: 18, weight: .bold))
-                                Text("Почати гру")
+                                Text("Play")
                                     .font(
                                         .system(
                                             size: 18,
@@ -64,12 +64,14 @@ struct ContentView: View {
                                         )
                                     )
                             }
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(.mint)
+                            .background(Color.accentColor)
                             .cornerRadius(16)
+                            .shadow(color: Color.accentColor.opacity(0.3), radius: 12, y: 5)
                         }
+                        .buttonStyle(.plain)
 
                         NavigationLink(destination: HelpView()) {
                             
@@ -78,7 +80,7 @@ struct ContentView: View {
                                         .font(
                                             .system(size: 18, weight: .semibold)
                                         )
-                                    Text("Правила")
+                                    Text("Rules")
                                         .font(
                                             .system(
                                                 size: 18,
@@ -87,13 +89,14 @@ struct ContentView: View {
                                             )
                                         )
                                 }
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.accentColor)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(.white.opacity(0.10))
+                                .background(Color.accentColor.opacity(0.15))
                                 .cornerRadius(16)
                             
                         }
+                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 32)
                     Spacer().frame(height: 60)

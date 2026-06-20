@@ -61,7 +61,7 @@ private struct HelpRow: View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(.tint)
+                .foregroundStyle(Color.accentColor)
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 4) {
