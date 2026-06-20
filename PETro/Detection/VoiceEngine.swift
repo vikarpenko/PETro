@@ -38,14 +38,23 @@ final class VoiceEngine {
     func requestMicPermission() async -> Bool {
         await AVAudioApplication.requestRecordPermission()
     }
+    
+    nonisolated func prepareAvSession() {
+            Task.detached {
+                let session = AVAudioSession.sharedInstance()
+                try? session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
+                try? session.setActive(true)
+                _ = AVAudioEngine().inputNode
+            }
+        }
 
 
     func startListening() throws {
         guard state == .idle else { return }
 
-        let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
-        try session.setActive(true)
+//        let session = AVAudioSession.sharedInstance()
+//        try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
+//        try session.setActive(true)
 
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)

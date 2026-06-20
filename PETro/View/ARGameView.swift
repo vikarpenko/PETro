@@ -2,26 +2,53 @@
 import SwiftUI
 
 struct ARGameView: View {
-    
+
     @State private var currentAnimation: Pet.AnimationState = .idle
     @State private var showHelp = false
-    
+    @State private var isLoading = true
+
     var body: some View {
-        ARViewContainer(animationState: $currentAnimation)
-            .ignoresSafeArea()
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showHelp = true
-                    } label: {
-                        Image(systemName: "questionmark.circle")
-                            .imageScale(.large)
+        ARViewContainer(
+            animationState: $currentAnimation,
+            isLoading: $isLoading
+        )
+        .overlay {
+            if isLoading {
+                ZStack {
+                    Color("Background").ignoresSafeArea()
+
+                    VStack(spacing: 20) {
+                        ProgressView()
+                            .controlSize(.large)
+
+                        Text("Готуємо простір...")
+                            .font(
+                                .system(
+                                    size: 18,
+                                    weight: .semibold,
+                                    design: .rounded
+                                )
+                            )
+                            .foregroundStyle(.primary)
                     }
                 }
+                .transition(.opacity)
             }
-            .sheet(isPresented: $showHelp) {
-                HelpView()
+        }
+        .ignoresSafeArea()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showHelp = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .imageScale(.large)
+                }
             }
+        }
+        .sheet(isPresented: $showHelp) {
+            HelpView()
+        }
     }
 }
 

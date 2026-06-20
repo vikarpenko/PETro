@@ -7,6 +7,7 @@ import SwiftUI
 struct ARViewContainer: UIViewRepresentable {
 
     @Binding var animationState: Pet.AnimationState
+    @Binding var isLoading: Bool
 
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
@@ -53,13 +54,15 @@ struct ARViewContainer: UIViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(isLoading: $isLoading)
     }
 
     final class Coordinator: NSObject {
 
         weak var arView: ARView?
         var pet: Pet?
+
+        @Binding var isLoading: Bool
 
         private let foodDetector = FoodDetector()
         private let handDetector = HandDetector()
@@ -68,9 +71,25 @@ struct ARViewContainer: UIViewRepresentable {
         private var isProcessingVoice = false
         private var recordingTask: Task<Void, Never>?
 
+        init(isLoading: Binding<Bool>) {
+            self._isLoading = isLoading
+            super.init()
+            preloadAssets()
+        }
+
+        private func preloadAssets() {
+            Task {
+                voiceEngine.prepareAvSession()
+                _ = try? await Entity(named: "parrot_actions.usdz")
+                await MainActor.run {
+                    self.isLoading = false
+                }
+            }
+        }
+
         @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
             guard !isProcessingVoice else { return }
-            
+
             guard let arView = arView else { return }
             let screenPoint = recognizer.location(in: arView)
 
@@ -130,14 +149,16 @@ struct ARViewContainer: UIViewRepresentable {
 
             case .ended, .cancelled:
                 guard isProcessingVoice else { return }
-                
+
                 recordingTask?.cancel()
                 recordingTask = nil
-                
+
                 if voiceEngine.state == .listening {
                     Task { @MainActor in
                         voiceEngine.stopListening()
-                        await pet.reactToMimic(soundDuration: voiceEngine.recordedDuration) {
+                        await pet.reactToMimic(
+                            soundDuration: voiceEngine.recordedDuration
+                        ) {
                             [weak self] in
                             self?.voiceEngine.playBackAsParrot(
                                 pitchCents: 700,
