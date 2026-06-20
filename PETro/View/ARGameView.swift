@@ -21,7 +21,7 @@ struct ARGameView: View {
                         ProgressView()
                             .controlSize(.large)
 
-                        Text("Готуємо простір...")
+                        Text("Preparing your space...")
                             .font(
                                 .system(
                                     size: 18,

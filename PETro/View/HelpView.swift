@@ -48,6 +48,7 @@ struct HelpView: View {
             }
             .padding(24)
         }
+        .background(Color("Background"))
         .presentationDetents([.medium, .large])
     }
 }
