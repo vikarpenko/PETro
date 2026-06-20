@@ -137,8 +137,7 @@ struct ARViewContainer: UIViewRepresentable {
                 if voiceEngine.state == .listening {
                     Task { @MainActor in
                         voiceEngine.stopListening()
-                        let estimatedDuration: TimeInterval = 3.0
-                        await pet.reactToMimic(soundDuration: estimatedDuration) {
+                        await pet.reactToMimic(soundDuration: voiceEngine.recordedDuration) {
                             [weak self] in
                             self?.voiceEngine.playBackAsParrot(
                                 pitchCents: 700,

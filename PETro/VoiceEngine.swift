@@ -69,6 +69,12 @@ final class VoiceEngine {
         return Date().timeIntervalSince(start) >= maxRecordingDuration
     }
 
+    var recordedDuration: TimeInterval {
+        guard let format = recordingFormat, format.sampleRate > 0 else { return 0 }
+        let totalFrames = recordedBuffers.reduce(0) { $0 + Int($1.frameLength) }
+        return Double(totalFrames) / format.sampleRate
+    }
+
     func stopListening() {
         guard state == .listening else { return }
         engine.inputNode.removeTap(onBus: 0)

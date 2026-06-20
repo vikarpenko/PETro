@@ -26,7 +26,7 @@ final class Pet: Entity {
             case .trick: return 21.54098090786517
             case .circleFly: return 26.121442114606744
             case .petting: return 13.03
-            case .speaking: return 13.90
+            case .speaking: return 1.55
             }
         }
         
@@ -40,7 +40,7 @@ final class Pet: Entity {
             case .trick: return 5.3
             case .circleFly: return 7.4792847671910115
             case .petting: return 4.44
-            case .speaking: return 2.0
+            case .speaking: return 0.6
             }
         }
     }
