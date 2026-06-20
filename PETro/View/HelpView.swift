@@ -14,17 +14,6 @@ struct HelpView: View {
                         .fontWeight(.semibold)
                     
                     Spacer()
-                    
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(.primary)
-                            .frame(width: 36, height: 36)
-                            .background(.gray.opacity(0.15))
-                            .clipShape(Circle())
-                    }
                 }
                 
                 HelpRow(
