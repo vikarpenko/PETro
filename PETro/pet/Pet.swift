@@ -37,7 +37,7 @@ final class Pet: Entity {
             case .idle: return 3.0
             case .rise: return 1.9058562728089887
             case .land: return 2.866792193483146
-            case .trick: return 4.580461206741573
+            case .trick: return 5.3
             case .circleFly: return 7.4792847671910115
             case .petting: return 4.44
             case .speaking: return 2.0
