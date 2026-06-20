@@ -45,6 +45,12 @@ struct HelpView: View {
             )
             
             HelpRow(
+                icon: "waveform",
+                title: "Repeats after you",
+                detail: "Press and hold the parrot, say something, then release — it will repeat it back in a parrot voice."
+            )
+            
+            HelpRow(
                 icon: "zzz",
                 title: "Don't bore it",
                 detail: "Leave it alone too long and it'll dramatically drop dead from boredom - keep it company!"
