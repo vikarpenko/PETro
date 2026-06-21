@@ -48,12 +48,20 @@ final class FoodDetector: NSObject, ARSessionDelegate {
             }) {
                 print("detected: \(detectedFood)")
 
-                let width = Double(self.arView?.bounds.width ?? 0)
-                let height = Double(self.arView?.bounds.height ?? 0)
-
+                let viewport = self.arView?.bounds.size ?? .zero
+                
+                let imageCenter = CGPoint(
+                    x: detectedFood.normRect.midX,
+                    y: detectedFood.normRect.midY
+                )
+                
+                let viewNormalized = imageCenter.applying(
+                    frame.displayTransform(for: .portrait, viewportSize: viewport)
+                )
+                
                 let screenPoint = CGPoint(
-                    x: detectedFood.normRect.midX * width,
-                    y: detectedFood.normRect.midY * height
+                    x: viewNormalized.x * viewport.width,
+                    y: viewNormalized.y * viewport.height
                 )
 
                 handleEating(point: screenPoint)
